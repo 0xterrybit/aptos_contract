@@ -4,7 +4,7 @@ version = "0.0.1"
 authors = []
 
 [addresses]
-perpetual = "0x9e54d3231b270990fde73545f034dfa771696759e4f40ef8d5fc214cf88b4c6f"
+perpetual = "0f79aebf9dce333113e6b5dc8e5d90cc0639e2180034a258a92d3d586726b619"
 
 [dev-addresses]
 
@@ -15,5 +15,9 @@ local = "../vendor"
 #git = "https://github.com/aptos-labs/aptos-core.git"
 #rev = "mainnet"
 #subdir = "aptos-move/framework/aptos-framework"
+
+
+[dependencies.AptosFramework]
+local = "../aptos-framework"
 
 [dev-dependencies]

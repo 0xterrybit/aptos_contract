@@ -10,11 +10,13 @@ module perpetual::pool {
     use perpetual::model::{Self, RebaseFeeModel, FundingFeeModel, ReservingFeeModel};
     use perpetual::sdecimal::{Self, SDecimal};
     use perpetual::positions::{Self, PositionConfig, Position};
+
     use aptos_std::smart_vector::{Self, SmartVector};
     use aptos_std::type_info::{Self, TypeInfo};
-    use perpetual::agg_price::{Self, AggPriceConfig, AggPrice};
     use aptos_framework::aptos_coin::AptosCoin;
     use aptos_framework::timestamp;
+
+    use perpetual::agg_price::{Self, AggPriceConfig, AggPrice};
     use perpetual::lp;
 
     friend perpetual::market;
@@ -269,9 +271,11 @@ module perpetual::pool {
         total_vaults_value: Decimal,
         total_weight: Decimal,
     ):(u64, Decimal) acquires Vault {
+
         let vault = borrow_global_mut<Vault<Collateral>>(@perpetual);
         let timestamp = timestamp::now_seconds();
         let lp_supply_amount = lp_supply_amount();
+
         assert!(vault.enabled, ERR_VAULT_DISABLED);
         assert!(deposit_amount > 0, ERR_INVALID_DEPOSIT_AMOUNT);
 
@@ -279,6 +283,7 @@ module perpetual::pool {
             &vault.price_config,
             timestamp
         );
+
         let deposit_value = agg_price::coins_to_value(&collateral_price, deposit_amount);
 
         // handle fee
@@ -299,20 +304,22 @@ module perpetual::pool {
 
         // handle mint
         let mint_amount = if (decimal::is_zero(&lp_supply_amount)) {
+            
             assert!(decimal::is_zero(&market_value), ERR_UNEXPECTED_MARKET_VALUE);
             truncate_decimal(deposit_value)
+
         } else {
+
             assert!(!decimal::is_zero(&market_value), ERR_UNEXPECTED_MARKET_VALUE);
             let exchange_rate = decimal::to_rate(
                 decimal::div(deposit_value, market_value)
             );
+
             decimal::floor_u64(
-                decimal::mul_with_rate(
-                    lp_supply_amount,
-                    exchange_rate,
-                )
+                decimal::mul_with_rate(lp_supply_amount, exchange_rate)
             )
         };
+
         assert!(mint_amount >= min_amount_out, ERR_AMOUNT_OUT_TOO_LESS);
 
         (mint_amount, fee_value)
@@ -388,6 +395,8 @@ module perpetual::pool {
         total_vault_value: Decimal,
         total_weight: Decimal
     ): Rate acquires Vault {
+
+
         let v = borrow_global_mut<Vault<Collateral>>(@perpetual);
 
         let fee_rate = compute_rebase_fee_rate(
@@ -433,7 +442,9 @@ module perpetual::pool {
             source_vault.weight,
             total_weight,
         );
+        
         let source_fee_value = decimal::mul_with_rate(swap_value, source_fee_rate);
+
 
         (
             decimal::sub(swap_value, source_fee_value),
@@ -1108,6 +1119,13 @@ module perpetual::pool {
         // loop through all of vault
         let (total_value, total_weight) = valuate_vault<AptosCoin>(timestamp, total_value, total_weight);
 
+        // usdt 30
+        // usdc 30
+        // btc 20
+        // eth 15
+        // apt 5
+
+
         (total_value, total_weight)
 
     }
@@ -1119,10 +1137,14 @@ module perpetual::pool {
 
         // loop through all of Symbol
         let total_value = valuate_symbol<AptosCoin, LONG>(timestamp, lp_supply_amount, total_value);
+        
+        let total_value = valuate_symbol<AptosCoin, SHORT>(timestamp, lp_supply_amount, total_value);
+        let total_value = valuate_symbol<AptosCoin, LONG>(timestamp, lp_supply_amount, total_value);
 
         total_value
 
     }
+
 
     fun valuate_vault<Collateral> (
         timestamp: u64,
@@ -1259,5 +1281,21 @@ module perpetual::pool {
         withdraw_amount
 
     }
+}
+#[test_only]
+module perpetual::pool_tests {
+    use perpetual::pool;
 
+    #[test]
+    fun test_add() {
+        // // a1 = +0
+        // let a1 = from_decimal(true, decimal::zero());
+        // // a2 = -0
+        // let a2 = from_decimal(false, decimal::zero());
+        
+        // // a1 + a2 = a2 + a1 = a1 = a2
+        // assert!(eq(&add(a1, a2), &a1), 0);
+        // assert!(eq(&add(a2, a1), &a2), 1);
+        
+    }
 }

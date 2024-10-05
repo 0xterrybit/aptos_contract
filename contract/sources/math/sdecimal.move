@@ -204,9 +204,9 @@ module perpetual::sdecimal {
 }
 
 #[test_only]
-module abex_core::sdecimal_tests {
-    use abex_core::decimal;
-    use abex_core::sdecimal::{
+module perpetual::sdecimal_tests {
+    use perpetual::decimal;
+    use perpetual::sdecimal::{
     from_decimal, add, add_with_decimal, sub, sub_with_decimal, eq,
     };
 

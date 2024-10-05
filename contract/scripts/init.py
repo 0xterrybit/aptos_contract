@@ -117,7 +117,7 @@ class MarketClient(RestClient):
         )
         return await self.submit_bcs_transaction(signed_transaction)
 
-    async def withdraw(self, sender: Account, collateral, lp_burn_amount, min_amount_out) -> str:
+    async def withdraw(self, sender: Account, collateral, _burn_amount, min_amount_out) -> str:
 
         payload = EntryFunction.natural(
             contract_address+"::market",

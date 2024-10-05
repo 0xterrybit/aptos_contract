@@ -211,11 +211,14 @@ module perpetual::market {
         feeder: vector<u8>,
         param_multiplier: u256,
     ) {
+
         admin::check_permission(signer::address_of(admin));
         let identifier = pyth::price_identifier::from_byte_vec(feeder);
+
         // create reserving fee model
         let model = model::create_reserving_fee_model(
             decimal::from_raw(param_multiplier));
+
         // add vault to market
         pool::new_vault<Collateral>(
             admin,
@@ -232,12 +235,7 @@ module perpetual::market {
     }
 
 
-    public entry fun add_new_referral<L>(
-        admin: &signer,
-        referrer: address,
-    ) acquires Market {
-        
-        admin::check_permission(signer::address_of(admin));
+    public entry fun add_new_referral<L>(referrer: &signer) acquires Market {
         
         let market = borrow_global_mut<Market>(@perpetual);
 
@@ -247,6 +245,8 @@ module perpetual::market {
         );
 
         let referral = referral::new_referral(referrer, market.rebate_model);
+
+        
         table::add(&mut market.referrals, referrer, referral);
 
         emit(ReferralAdded {
@@ -322,8 +322,7 @@ module perpetual::market {
     ) {
         admin::check_permission(signer::address_of(admin));
         let identifier = pyth::price_identifier::from_byte_vec(feeder);
-        let price_config =
-            agg_price::new_agg_price_config<Index>(max_interval, max_price_confidence, identifier);
+        let price_config = agg_price::new_agg_price_config<Index>(max_interval, max_price_confidence, identifier);
         pool::replace_symbol_price_config<Index, Direction>(admin, price_config);
         // TODO: emit event
     }
@@ -979,8 +978,13 @@ module perpetual::market {
         min_amount_out: u64,
         vaas: vector<vector<u8>>
     ) acquires Market {
+        
+        
         pyth::pyth::update_price_feeds_with_funder(user, vaas);
+
+        
         let market = borrow_global_mut<Market>(@perpetual);
+
         let (
             total_weight,
             total_vaults_value,
@@ -1147,9 +1151,13 @@ module perpetual::market {
     }
 
     fun finalize_market_valuation(): (Decimal, Decimal, Decimal) {
+        
         let (vault_total_value, vault_total_weight) = pool::vault_valuation();
+
         let symbol_total_value = pool::symbol_valuation();
+
         let market_value = sdecimal::add_with_decimal(symbol_total_value, vault_total_value);
+        
         (vault_total_weight, vault_total_value, sdecimal::value(&market_value))
     }
 
@@ -1182,7 +1190,6 @@ module perpetual::market {
         pool::collateral_amount<Collateral>(withdraw_value)
     }
 
-
     public fun force_close_position<Collateral, Index, Direction>() {}
 
     public fun force_clear_closed_position<Collateral, Index, Direction>() {}
@@ -1213,13 +1220,31 @@ module perpetual::market {
         referrals: &Table<address, Referral>,
         owner: address
     ): (Rate, address) {
+
         if (table::contains(referrals, owner)) {
             let referral = table::borrow(referrals, owner);
-            (referral::get_rebate_rate(referral), referral::get_referrer(referral))
+
+            (
+                referral::get_rebate_rate(referral), 
+                referral::get_referrer(referral)
+            )
+
+
         } else {
             (rate::zero(), @0x0)
         }
     }
 
+
+}
+#[test_only]
+module perpetual::pool_tests {
+    use perpetual::market;
+
+    #[test]
+    fun test_add() {
+       
+        
+    }
 
 }
